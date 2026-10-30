@@ -1,0 +1,71 @@
+name: Rebuild ledger
+
+on:
+  issues:
+    types: [opened, edited, reopened, closed, deleted, labeled, unlabeled]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# Two expenses logged at the same moment both rewrite the same file.
+# Serialise the rebuilds so the second one sees the first one's commit.
+concurrency:
+  group: ledger
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.action == 'deleted' ||
+      contains(github.event.issue.labels.*.name, 'expense')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Rebuild data/expenses.json from issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/build-data.mjs
+
+      - name: Commit the ledger if it changed
+        run: |
+          git config user.name "ledger-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- data/expenses.json; then
+            echo "Ledger unchanged."
+          else
+            git add data/expenses.json
+            git commit -m "ledger: rebuild from issues"
+            git push
+          fi
+
+      # Deploy from this run rather than waiting for a push-triggered Pages build:
+      # a push made with GITHUB_TOKEN does not trigger other workflows.
+      - name: Assemble the site
+        run: |
+          mkdir -p _site
+          cp -r index.html styles.css app.js config.json data _site/
+          touch _site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: rebuild
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

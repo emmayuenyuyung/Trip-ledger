@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en" data-state="loading">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Trip ledger</title>
+<meta name="description" content="A shared trip ledger kept in a GitHub repository. Every number traces back to an issue.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A1C22'/%3E%3Cpath d='M4 20h24M9 20V9M16 20v7M23 20v-7' stroke='%23E2622F' stroke-width='2.5' fill='none'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip-link" href="#ledger-band">Skip to the ledger</a>
+
+<header class="mast">
+  <div class="shell">
+    <div class="mast-grid">
+      <div class="mast-id">
+        <h1 id="trip-name">Trip ledger</h1>
+        <p class="mast-meta">
+          <span id="trip-dates"></span>
+          <span class="mast-dot" aria-hidden="true"></span>
+          <span id="trip-people"></span>
+          <span class="mast-dot" aria-hidden="true"></span>
+          <span id="trip-base"></span>
+        </p>
+      </div>
+
+      <div class="mast-figure">
+        <p class="figure-label" id="total-label">Total spent</p>
+        <p class="figure-value num" id="total">—</p>
+        <p class="figure-note" id="total-note"></p>
+      </div>
+    </div>
+
+    <div class="mast-foot">
+      <a class="btn btn-primary" id="add-expense" href="#" target="_blank" rel="noopener" hidden>
+        Add an expense
+      </a>
+      <button class="btn btn-quiet" id="refresh" type="button">Refresh</button>
+      <p class="stamp" id="stamp"></p>
+    </div>
+  </div>
+</header>
+
+<main class="shell main" id="main">
+  <p class="loading" id="loading" aria-live="polite">Reading the ledger…</p>
+  <div class="notice" id="notice" hidden></div>
+
+  <section class="band" id="balances-band" aria-labelledby="balances-heading" hidden>
+    <div class="band-head">
+      <h2 id="balances-heading">Watermarks</h2>
+      <p class="band-note">
+        Every traveller's net position. Above the line the group owes them; below it they owe the group.
+        Select a name to see only the lines they are on.
+      </p>
+    </div>
+    <div class="watermarks" id="watermarks"></div>
+  </section>
+
+  <section class="band" id="settle-band" aria-labelledby="settle-heading" hidden>
+    <div class="band-head">
+      <h2 id="settle-heading">Settle up</h2>
+      <p class="band-note" id="settle-note"></p>
+    </div>
+    <ol class="settle" id="settle"></ol>
+  </section>
+
+  <section class="band" id="ledger-band" aria-labelledby="ledger-heading" hidden>
+    <div class="band-head">
+      <h2 id="ledger-heading">Ledger</h2>
+      <div class="band-tools">
+        <p class="band-note" id="ledger-note"></p>
+        <button class="chip" id="clear-focus" type="button" hidden></button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="ledger" id="ledger">
+        <caption class="sr-only">Every expense, in date order.</caption>
+        <thead>
+          <tr>
+            <th scope="col" aria-sort="ascending">
+              <button class="sort" type="button" data-sort="date">Date</button>
+            </th>
+            <th scope="col">Expense</th>
+            <th scope="col" class="col-who">Paid by</th>
+            <th scope="col" class="col-num" aria-sort="none">
+              <button class="sort" type="button" data-sort="amount">Amount</button>
+            </th>
+            <th scope="col" class="col-split">Split</th>
+            <th scope="col" class="col-num col-share">Per head</th>
+          </tr>
+        </thead>
+        <tbody id="ledger-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="band" id="problems-band" aria-labelledby="problems-heading" hidden>
+    <div class="band-head">
+      <h2 id="problems-heading">Needs fixing</h2>
+      <p class="band-note">
+        These issues have the <code>expense</code> label but could not be read, so they are not in the totals.
+        Open one, fix the field named below, and save it — the ledger rebuilds itself.
+      </p>
+    </div>
+    <ul class="problems" id="problems"></ul>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="shell foot-in">
+    <p class="foot-note">
+      Built from the issues in
+      <a id="repo-link" href="https://github.com" target="_blank" rel="noopener">the repository</a>.
+      <span id="foot-demo"></span>
+    </p>
+    <p class="foot-note" id="foot-stamp"></p>
+  </div>
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

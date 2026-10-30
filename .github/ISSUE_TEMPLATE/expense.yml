@@ -1,0 +1,144 @@
+name: Expense
+description: Record something you paid for that the group should split.
+title: "Expense: "
+labels: ["expense"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        One expense per issue. Fill this in right after you pay — it takes twenty seconds.
+        You can edit the issue later, or close it to remove the expense from the ledger entirely.
+
+  - type: dropdown
+    id: payer
+    attributes:
+      label: Who paid
+      description: The person whose money left their account.
+      options:
+        # Keep this list identical to "travellers" in config.json.
+        - Maya
+        - Kenji
+        - Priya
+        - Tom
+        - Elena
+    validations:
+      required: true
+
+  - type: input
+    id: amount
+    attributes:
+      label: Amount
+      description: What it cost, in the currency you actually paid. Numbers only — no currency symbol.
+      placeholder: "1680"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: currency
+    attributes:
+      label: Currency
+      description: The currency you were charged in.
+      options:
+        - HKD
+        - JPY
+        - KRW
+        - TWD
+        - THB
+        - SGD
+        - MYR
+        - CNY
+        - USD
+        - EUR
+        - GBP
+        - AUD
+        - NZD
+        - CAD
+        - CHF
+        - VND
+        - IDR
+        - PHP
+        - INR
+        - AED
+        - TRY
+        - MXN
+        - BRL
+        - ZAR
+        - SEK
+        - NOK
+        - DKK
+        - PLN
+        - CZK
+        - HUF
+    validations:
+      required: true
+
+  - type: input
+    id: date
+    attributes:
+      label: Date
+      description: When it happened. Leave blank to use the date you opened this issue.
+      placeholder: "2026-11-03"
+
+  - type: dropdown
+    id: split
+    attributes:
+      label: How to split it
+      description: Equal divides by head. Weighted shares splits by the numbers you give below. Exact uses the amounts you give below.
+      options:
+        - Equal — divide by head
+        - Weighted shares — divide by the numbers below
+        - Exact amounts — use the amounts below
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: participants
+    attributes:
+      label: Who is splitting it
+      description: Everyone who shares this expense, including the payer.
+      options:
+        # Keep this list identical to "travellers" in config.json.
+        - label: Maya
+        - label: Kenji
+        - label: Priya
+        - label: Tom
+        - label: Elena
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Shares or exact amounts
+      description: |
+        Only needed for weighted shares or exact amounts. One person per line, like `Kenji: 2` or `Tom: 100`.
+        For weighted shares the numbers can be anything — they only set the ratio.
+      placeholder: |
+        Kenji: 2
+        Tom: 2
+        Maya: 1
+    validations:
+      required: false
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Food
+        - Transport
+        - Lodging
+        - Activities
+        - Shopping
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Anything the group will want to remember when they see this line.
+      placeholder: "Kenji and Tom had the tasting menu."
+    validations:
+      required: false
