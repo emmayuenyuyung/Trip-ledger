@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
   pages: write
   id-token: write
 
@@ -22,11 +23,8 @@ concurrency:
 
 jobs:
   rebuild:
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'push' ||
-      github.event.action == 'deleted' ||
-      contains(github.event.issue.labels.*.name, 'expense')
+    # Every issue event re-reads the ledger. The script decides what counts as
+    # an expense, so a submission is never skipped for want of a label.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,6 +32,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      # Created here so the form's label chip exists without anyone having to
+      # remember it. Idempotent: a second run just reports it already exists.
+      - name: Ensure the expense label exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create expense --color 0E8A16 \
+            --description "A shared trip expense counted in the ledger" \
+            || echo "The expense label already exists."
 
       - name: Rebuild data/expenses.json from issues
         # A config-only change does not need the issues re-read, and skipping

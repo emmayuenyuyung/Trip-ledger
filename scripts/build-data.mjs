@@ -100,7 +100,7 @@ async function fetchExpenseIssues() {
   const collected = [];
   for (let page = 1; page <= 20; page += 1) {
     const url =
-      `${API}/repos/${REPO}/issues?state=open&labels=${encodeURIComponent(LABEL)}` +
+      `${API}/repos/${REPO}/issues?state=open` +
       `&per_page=100&page=${page}&sort=created&direction=asc`;
 
     const response = await fetch(url, {
@@ -120,7 +120,9 @@ async function fetchExpenseIssues() {
 
     const batch = await response.json();
     // The issues endpoint also returns pull requests; they are not expenses.
-    collected.push(...batch.filter((item) => !item.pull_request));
+    collected.push(
+      ...batch.filter((item) => !item.pull_request && isExpenseIssue(item)),
+    );
 
     if (batch.length < 100) {
       break;
@@ -128,6 +130,22 @@ async function fetchExpenseIssues() {
   }
 
   return collected;
+}
+
+/**
+ * An expense is an issue carrying the label, or one plainly filled in from the
+ * issue form. The form supplies the label, but a repository that has never run
+ * this workflow may not have that label yet — and an expense that is silently
+ * ignored is the worst failure this tool has.
+ */
+function isExpenseIssue(issue) {
+  const labels = (issue.labels || []).map((label) =>
+    typeof label === "string" ? label : label?.name,
+  );
+  if (labels.some((name) => String(name).toLowerCase() === LABEL)) {
+    return true;
+  }
+  return /^###\s+who paid\s*$/im.test(issue.body || "");
 }
 
 /* ------------------------------------------------------------------ parse */

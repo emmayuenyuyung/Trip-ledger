@@ -32,8 +32,8 @@ line — right means the group owes you, left means you owe the group.*
 
 1. **Create a public repository** and push this folder to it. (Public is required
    for Pages on the free plan. See *Before you make it public* below.)
-2. **Create a label called `expense`** — Issues → Labels → New label. Every issue
-   that counts must carry it; the issue form adds it automatically.
+2. **Labels look after themselves.** The workflow creates the `expense` label on
+   its first run, and the issue form applies it to every expense.
 3. **Turn on Pages**: Settings → Pages → Build and deployment → Source →
    **GitHub Actions**. Not "Deploy from a branch".
 4. **Fill in `config.json`**: your trip name, dates, the traveller list, the
@@ -91,7 +91,7 @@ only ever offers the current names.
 | Symptom | Cause |
 | --- | --- |
 | Page shows "No expenses yet" | No open issue carries the `expense` label yet |
-| An expense is missing but the issue is open | The label is missing, or the workflow failed — check the Actions tab |
+| An expense is missing but the issue is open | The workflow failed — check the Actions tab |
 | A line appears under "Needs fixing" | Read the reason: the message names the field and what is wrong with it |
 | Nothing ever updates | Pages is set to "Deploy from a branch" instead of "GitHub Actions" |
 | The form still shows old names | The "Sync the issue form" step failed — open the latest run in Actions and read it |
