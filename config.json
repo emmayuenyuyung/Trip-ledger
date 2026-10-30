@@ -1,7 +1,7 @@
 {
   "trip": "Osaka & Kyoto",
   "dates": "2–9 November 2026",
-  "repository": "",
+  "repository": "emmayuenyuyung/Trip-ledger",
   "baseCurrency": "HKD",
   "ratesToBase": {
     "HKD": 1,
