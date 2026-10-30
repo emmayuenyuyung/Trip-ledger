@@ -14,13 +14,16 @@ body:
     attributes:
       label: Who paid
       description: The person whose money left their account.
+      # Generated from "travellers" in config.json by scripts/sync-template.mjs.
+      # Edit config.json, not this list.
       options:
-        # Keep this list identical to "travellers" in config.json.
+        # BEGIN travellers (dropdown)
         - Maya
         - Kenji
         - Priya
         - Tom
         - Elena
+        # END travellers (dropdown)
     validations:
       required: true
 
@@ -96,13 +99,16 @@ body:
     attributes:
       label: Who is splitting it
       description: Everyone who shares this expense, including the payer.
+      # Generated from "travellers" in config.json by scripts/sync-template.mjs.
+      # Edit config.json, not this list.
       options:
-        # Keep this list identical to "travellers" in config.json.
+        # BEGIN travellers (checkboxes)
         - label: Maya
         - label: Kenji
         - label: Priya
         - label: Tom
         - label: Elena
+        # END travellers (checkboxes)
     validations:
       required: true
 

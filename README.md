@@ -38,10 +38,9 @@ line — right means the group owes you, left means you owe the group.*
    **GitHub Actions**. Not "Deploy from a branch".
 4. **Fill in `config.json`**: your trip name, dates, the traveller list, the
    currency you want to settle in, and `repository` as `owner/name`.
-5. **Edit the two traveller lists in `.github/ISSUE_TEMPLATE/expense.yml`** so the
-   form's dropdown and checkboxes match `config.json`. This is the one duplication
-   in the project; a name that is in one and not the other shows up as a warning
-   on the page rather than disappearing.
+5. **Set your travellers in `config.json`.** The issue form's dropdown and
+   checkboxes are regenerated from that list by the workflow, so it is the only
+   place you edit. Pushing `config.json` updates the form and the page together.
 6. **Run the workflow once**: Actions → *Rebuild ledger* → Run workflow. This
    replaces the demo rows with an empty ledger.
 
@@ -60,13 +59,20 @@ closing the clean way to remove a mistake.
 | What | Where |
 | --- | --- |
 | Trip name, dates | `config.json` → `trip`, `dates` (no rebuild needed) |
-| Who is on the trip | `config.json` → `travellers` **and** the two lists in `.github/ISSUE_TEMPLATE/expense.yml` |
+| Who is on the trip | `config.json` → `travellers`; the issue form follows automatically |
+| Rename someone after expenses exist | add an entry to `aliases` in `config.json` |
 | Currency everything settles in | `config.json` → `baseCurrency` |
 | Exchange rates | `config.json` → `ratesToBase`, as *units of your base currency per 1 unit of that currency* |
 
 Rates are manual and deliberately so — a live FX feed would need a server and a
 key, and would change historical numbers every day. Update them once mid-trip if
 the rate moves enough to matter.
+
+Renaming somebody after expenses exist: add an entry to `aliases` in
+`config.json`, such as `"May": "Maya"`. Issues that still say "May" are
+counted as Maya, so you never have to edit them one by one. The form itself
+only ever offers the current names.
+
 
 ## Three things that will bite you
 
@@ -88,6 +94,8 @@ the rate moves enough to matter.
 | An expense is missing but the issue is open | The label is missing, or the workflow failed — check the Actions tab |
 | A line appears under "Needs fixing" | Read the reason: the message names the field and what is wrong with it |
 | Nothing ever updates | Pages is set to "Deploy from a branch" instead of "GitHub Actions" |
+| The form still shows old names | The "Sync the issue form" step failed — open the latest run in Actions and read it |
+| An old name is now flagged as unknown | Add it to `aliases` in `config.json` so it maps to the current name |
 | The workflow fails on `git push` | Branch protection is on for the default branch; allow the workflow to push, or turn protection off |
 | Totals ignore an expense | Its currency has no entry in `ratesToBase` |
 

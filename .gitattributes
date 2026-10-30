@@ -1,0 +1,4 @@
+# The workflow's scripts rewrite these files on Linux; keep the checkout
+# identical so the generated regions never churn between platforms.
+* text=auto eol=lf
+*.png binary

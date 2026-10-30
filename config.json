@@ -35,5 +35,6 @@
     "CZK": 0.34,
     "HUF": 0.021
   },
-  "travellers": ["Maya", "Kenji", "Priya", "Tom", "Elena"]
+  "travellers": ["Maya", "Kenji", "Priya", "Tom", "Elena"],
+  "aliases": {}
 }

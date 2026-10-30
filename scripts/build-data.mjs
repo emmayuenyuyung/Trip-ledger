@@ -35,6 +35,12 @@ async function main() {
   const config = JSON.parse(await readFile(join(ROOT, "config.json"), "utf8"));
   const roster = Array.isArray(config.travellers) ? config.travellers : [];
   const rosterIndex = new Map(roster.map((name) => [name.toLowerCase(), name]));
+  const aliasIndex = new Map(
+    Object.entries(config.aliases || {}).map(([alias, target]) => [
+      String(alias).trim().toLowerCase(),
+      String(target).trim(),
+    ]),
+  );
 
   const issues = await fetchExpenseIssues();
   const expenses = [];
@@ -42,7 +48,13 @@ async function main() {
 
   for (const issue of issues) {
     try {
-      expenses.push(parseIssue(issue, rosterIndex, config.ratesToBase || {}));
+      expenses.push(
+        parseIssue(issue, {
+          rosterIndex,
+          aliasIndex,
+          rates: config.ratesToBase || {},
+        }),
+      );
     } catch (error) {
       problems.push({
         issue: issue.number,
@@ -120,12 +132,12 @@ async function fetchExpenseIssues() {
 
 /* ------------------------------------------------------------------ parse */
 
-function parseIssue(issue, rosterIndex, rates) {
+function parseIssue(issue, refs) {
   const fields = splitSections(issue.body || "");
 
   const payer = canonicalName(
     value(fields, "who paid", "payer"),
-    rosterIndex,
+    refs,
     "Who paid",
   );
 
@@ -141,7 +153,7 @@ function parseIssue(issue, rosterIndex, rates) {
   if (!/^[A-Z]{3}$/.test(currency)) {
     throw new Error(`Currency "${currency}" is not a three-letter code.`);
   }
-  if (!Object.prototype.hasOwnProperty.call(rates, currency)) {
+  if (!Object.prototype.hasOwnProperty.call(refs.rates, currency)) {
     throw new Error(
       `No exchange rate for ${currency} in config.json, so this cannot be counted.`,
     );
@@ -150,7 +162,7 @@ function parseIssue(issue, rosterIndex, rates) {
   const method = parseMethod(value(fields, "how to split it", "split"));
   const participantBlock = value(fields, "who is splitting it", "participants");
   const participants = parseParticipants(participantBlock).map((name) =>
-    canonicalName(name, rosterIndex, "Who is splitting it"),
+    canonicalName(name, refs, "Who is splitting it"),
   );
 
   if (participants.length === 0) {
@@ -227,18 +239,31 @@ function cleanTitle(title) {
     .trim() || "Expense";
 }
 
-function canonicalName(raw, rosterIndex, fieldLabel) {
+function canonicalName(raw, refs, fieldLabel) {
   const name = cleanText(raw).replace(/^[-*]\s*(\[[ xX]\]\s*)?/, "").trim();
   if (!name) {
     throw new Error(`“${fieldLabel}” is empty.`);
   }
-  const match = rosterIndex.get(name.toLowerCase());
-  if (!match) {
+  const key = name.toLowerCase();
+
+  const match = refs.rosterIndex.get(key);
+  if (match) return match;
+
+  // Renaming somebody in config.json would orphan every issue that still
+  // carries their old name, so old names are mapped through `aliases`
+  // instead of editing issues one by one.
+  const alias = refs.aliasIndex.get(key);
+  if (alias) {
+    const resolved = refs.rosterIndex.get(alias.toLowerCase());
+    if (resolved) return resolved;
     throw new Error(
-      `“${name}” is not in the traveller list in config.json (${fieldLabel}).`,
+      `“${name}” is an alias for “${alias}”, which is not in travellers in config.json.`,
     );
   }
-  return match;
+
+  throw new Error(
+    `“${name}” is not one of the travellers in config.json (${fieldLabel}).`,
+  );
 }
 
 function parseNumber(raw, fieldLabel) {

@@ -3,6 +3,10 @@ name: Rebuild ledger
 on:
   issues:
     types: [opened, edited, reopened, closed, deleted, labeled, unlabeled]
+  # Editing config.json changes the page and the issue form, so redeploy.
+  push:
+    paths:
+      - config.json
   workflow_dispatch:
 
 permissions:
@@ -20,6 +24,7 @@ jobs:
   rebuild:
     if: >-
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
       github.event.action == 'deleted' ||
       contains(github.event.issue.labels.*.name, 'expense')
     runs-on: ubuntu-latest
@@ -31,20 +36,26 @@ jobs:
           node-version: 20
 
       - name: Rebuild data/expenses.json from issues
+        # A config-only change does not need the issues re-read, and skipping
+        # it keeps that run fast.
+        if: github.event_name != 'push'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: node scripts/build-data.mjs
 
-      - name: Commit the ledger if it changed
+      - name: Sync the issue form with config.json
+        run: node scripts/sync-template.mjs
+
+      - name: Commit anything that changed
         run: |
           git config user.name "ledger-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- data/expenses.json; then
-            echo "Ledger unchanged."
+          git add data/expenses.json .github/ISSUE_TEMPLATE/expense.yml
+          if git diff --cached --quiet; then
+            echo "Nothing to commit."
           else
-            git add data/expenses.json
-            git commit -m "ledger: rebuild from issues"
+            git commit -m "ledger: rebuild from issues and config"
             git push
           fi
 
